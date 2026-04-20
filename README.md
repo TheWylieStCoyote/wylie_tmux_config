@@ -6,11 +6,25 @@ A tmux configuration styled to match the [Neovim](../nvim) and [Yazi](../yazi) s
 
 - tmux ≥ 3.2
 - A [Nerd Font](https://www.nerdfonts.com/) terminal font
-- One of `wl-copy`, `xclip`, or `xsel` for clipboard integration
+- [tpm](https://github.com/tmux-plugins/tpm) for plugin management
 
 ## Installation
 
-The config lives at `~/.config/tmux/tmux.conf`, which tmux reads automatically from version 3.1+. To reload without restarting:
+The config lives at `~/.config/tmux/tmux.conf`, which tmux reads automatically from version 3.1+.
+
+**Install tpm:**
+
+```sh
+git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+```
+
+**Install plugins** — start tmux, then:
+
+```
+prefix + I
+```
+
+**Reload config** without restarting:
 
 ```
 prefix + r
@@ -21,6 +35,19 @@ Or from the shell:
 ```sh
 tmux source ~/.config/tmux/tmux.conf
 ```
+
+## Plugins
+
+| Plugin | Purpose |
+|---|---|
+| [tmux-resurrect](https://github.com/tmux-plugins/tmux-resurrect) | Save and restore sessions across reboots |
+| [tmux-continuum](https://github.com/tmux-plugins/tmux-continuum) | Auto-save resurrect state every 15 minutes |
+| [vim-tmux-navigator](https://github.com/christoomey/vim-tmux-navigator) | Seamless `C-h/j/k/l` navigation between Neovim splits and tmux panes |
+| [tmux-yank](https://github.com/tmux-plugins/tmux-yank) | Robust system clipboard integration in copy mode |
+| [tmux-fzf](https://github.com/sainnhe/tmux-fzf) | Fuzzy-find sessions, windows, panes, and commands |
+| [tmux-fingers](https://github.com/Morantron/tmux-fingers) | Hint mode for copying paths, URLs, and git hashes without entering copy mode |
+
+> **vim-tmux-navigator** requires a matching Neovim plugin. Add `{ "christoomey/vim-tmux-navigator" }` to your lazy.nvim plugins.
 
 ## Theme
 
@@ -67,8 +94,10 @@ Window names auto-rename to the basename of the current path.
 |---|---|
 | `prefix \|` | Split horizontal (preserves cwd) |
 | `prefix -` | Split vertical (preserves cwd) |
-| `prefix h/j/k/l` | Navigate panes (vim-style) |
+| `C-h/j/k/l` | Navigate panes **or** Neovim splits (vim-tmux-navigator, no prefix) |
+| `prefix h/j/k/l` | Navigate panes (prefix fallback) |
 | `prefix H/J/K/L` | Resize pane (repeatable, 5 cells) |
+| `prefix C-l` | Clear screen (restored — vim-tmux-navigator claims bare `C-l`) |
 | `prefix x` | Kill pane |
 
 ### Windows
@@ -93,6 +122,10 @@ Window names auto-rename to the basename of the current path.
 | Key | Action |
 |---|---|
 | `prefix t` | Popup terminal (80% × 75%, at cwd) |
+| `prefix C-f` | tmux-fzf launcher (sessions, windows, panes, commands) |
+| `prefix F` | tmux-fingers hint mode (copy paths, URLs, hashes) |
+| `prefix C-s` | Save session (tmux-resurrect) |
+| `prefix C-r` | Restore session (tmux-resurrect) |
 
 ### Copy Mode (vi)
 
@@ -102,14 +135,13 @@ Enter copy mode with `prefix Enter` or `prefix [`.
 |---|---|
 | `v` | Begin selection |
 | `C-v` | Toggle rectangle selection |
-| `y` | Yank to system clipboard and exit |
+| `y` | Yank to system clipboard and exit (tmux-yank) |
+| `Y` | Yank current line to clipboard (tmux-yank) |
 | `Escape` | Cancel |
 | `C-d` / `C-u` | Half-page down / up |
 | `H` / `L` | Start / end of line |
 | `/` / `?` | Search forward / backward |
 | `n` / `N` | Next / previous match |
-
-Clipboard priority: `wl-copy` (Wayland) → `xclip` → `xsel`.
 
 ## Settings Reference
 
@@ -119,7 +151,7 @@ Clipboard priority: `wl-copy` (Wayland) → `xclip` → `xsel`.
 | `base-index` | `1` | Windows and panes start at 1 |
 | `escape-time` | `0` | No delay for Escape (important for Neovim) |
 | `mouse` | `on` | Click to focus, scroll to scroll |
-| `history-limit` | `50000` | Scrollback lines |
+| `history-limit` | `1000000` | Scrollback lines |
 | `mode-keys` | `vi` | Copy mode uses vim bindings |
 | `focus-events` | `on` | Lets Neovim detect focus for autoread |
 | `detach-on-destroy` | `off` | Switch to another session on kill instead of exiting |
