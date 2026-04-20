@@ -122,6 +122,7 @@ Window names auto-rename to the basename of the current path.
 | Key | Action |
 |---|---|
 | `prefix t` | Popup terminal (80% × 75%, at cwd) |
+| `prefix M` | Tmuxinator session picker (fzf) |
 | `prefix C-f` | tmux-fzf launcher (sessions, windows, panes, commands) |
 | `prefix F` | tmux-fingers hint mode (copy paths, URLs, hashes) |
 | `prefix C-s` | Save session (tmux-resurrect) |
@@ -142,6 +143,55 @@ Enter copy mode with `prefix Enter` or `prefix [`.
 | `H` / `L` | Start / end of line |
 | `/` / `?` | Search forward / backward |
 | `n` / `N` | Next / previous match |
+
+## Tmuxinator
+
+[Tmuxinator](https://github.com/tmuxinator/tmuxinator) manages named session layouts defined as YAML files in `~/.config/tmuxinator/`.
+
+**Install:**
+
+```sh
+gem install tmuxinator
+```
+
+**Common commands:**
+
+| Command | Action |
+|---|---|
+| `tmuxinator start <name>` | Start a session |
+| `tmuxinator stop <name>` | Stop a session |
+| `tmuxinator new <name>` | Create a new session config |
+| `tmuxinator edit <name>` | Edit an existing config |
+| `tmuxinator list` | List all session configs |
+| `prefix M` | fzf picker to start any tmuxinator session |
+
+**Example layout** (`~/.config/tmuxinator/example.yml`):
+
+```yaml
+name: example
+root: ~/
+
+windows:
+  - editor:
+      layout: main-vertical
+      panes:
+        - nvim .
+        - ""
+
+  - files:
+      panes:
+        - yazi
+
+  - git:
+      panes:
+        - lazygit
+
+  - terminal:
+      panes:
+        - ""
+```
+
+Copy and rename `example.yml` for each project, update `root` to the project path, and adjust the panes to taste.
 
 ## Settings Reference
 
