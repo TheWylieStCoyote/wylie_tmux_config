@@ -121,6 +121,7 @@ Window names auto-rename to the basename of the current path.
 
 | Key | Action |
 |---|---|
+| `prefix ?` | Help popup — fuzzy-searchable keybinding reference |
 | `prefix t` | Popup terminal (80% × 75%, at cwd) |
 | `prefix M` | Tmuxinator session picker (fzf) |
 | `prefix C-f` | tmux-fzf launcher (sessions, windows, panes, commands) |
