@@ -38,7 +38,19 @@ tmux source ~/.config/tmux/tmux.conf
 
 > **Note:** `tmux source` is a tmux command. Do not `source ~/.config/tmux/tmux.conf` from bash — bash will try to run `set`, `bind`, and `setw` as shell builtins and can break readline keys (`t`, `c`, `k`) in that shell. If that happens, open a new terminal or run `bind '"t": self-insert'` for each affected key.
 
-## Automatic Sessions
+## Sessions
+
+### Named sessions
+
+| Command | Action |
+|---|---|
+| `tmux new -s <name>` | Create a new session called `<name>` (fails if it already exists) |
+| `tmux attach -t <name>` | Attach to an existing session |
+| `tmux new -A -s <name>` | Attach if `<name>` exists, otherwise create it |
+| `tmux ls` | List running sessions |
+| `tmux kill-session -t <name>` | Kill a session |
+
+`new` is short for `new-session`. The `-A` form is the one to use in scripts and shell startup files, since it is safe to run repeatedly.
 
 ### Start tmux when a terminal opens
 
@@ -46,13 +58,13 @@ Add this to the end of `~/.bashrc`:
 
 ```sh
 if command -v tmux >/dev/null && [ -z "$TMUX" ] && [ -t 0 ] && [[ $- == *i* ]]; then
-  tmux attach -t main 2>/dev/null || tmux new -s main
+  tmux new -A -s main
 fi
 ```
 
 This attaches to a session named `main` if one exists, otherwise creates it. The guards skip auto-start when already inside tmux, in a non-interactive shell, or when there is no tty (e.g. some IDE terminals).
 
-To launch a tmuxinator project instead, replace the `tmux attach` line with `tmuxinator start <name>`.
+To launch a tmuxinator project instead, replace the `tmux new -A` line with `tmuxinator start <name>`.
 
 ### Restore sessions after a reboot
 
@@ -117,6 +129,42 @@ tmux attach -t main
 Fine for a single fixed layout, but gets verbose compared with the YAML.
 
 > **Note:** tmux-continuum also restores the last saved session on first start. If you use a scripted layout as your default, set `@continuum-restore 'off'` in `tmux.conf`, otherwise you get the restored session **and** the scripted one.
+
+### Activate a Python venv on session start
+
+**With tmuxinator**, use `pre_window`. It runs in every pane before that pane's own command, so the whole session starts with the venv active (including Neovim, so language servers pick up the right interpreter):
+
+```yaml
+name: myproject
+root: ~/code/myproject
+pre_window: source .venv/bin/activate
+
+windows:
+  - editor:
+      panes:
+        - nvim .
+  - shell:
+      panes:
+        - ""
+```
+
+The path is relative to `root`; an absolute path such as `~/.venvs/myproject/bin/activate` also works. To activate only in specific panes, skip `pre_window` and chain it into the pane command instead:
+
+```yaml
+  - shell:
+      panes:
+        - source .venv/bin/activate && python manage.py runserver
+```
+
+**With plain tmux**, create the window with a normal shell and type the activation into it with `send-keys`:
+
+```sh
+tmux new-session -d -s main -n shell -c ~/code/myproject
+tmux send-keys -t main:shell 'source .venv/bin/activate' Enter
+tmux attach -t main
+```
+
+> **Note:** do not pass `source .venv/bin/activate` as the window's startup command (`tmux new-session ... 'source .venv/bin/activate'`). tmux runs that command *instead of* a shell, so the window closes as soon as it finishes.
 
 ## Plugins
 
