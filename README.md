@@ -36,16 +36,98 @@ Or from the shell:
 tmux source ~/.config/tmux/tmux.conf
 ```
 
+> **Note:** `tmux source` is a tmux command. Do not `source ~/.config/tmux/tmux.conf` from bash — bash will try to run `set`, `bind`, and `setw` as shell builtins and can break readline keys (`t`, `c`, `k`) in that shell. If that happens, open a new terminal or run `bind '"t": self-insert'` for each affected key.
+
+## Automatic Sessions
+
+### Start tmux when a terminal opens
+
+Add this to the end of `~/.bashrc`:
+
+```sh
+if command -v tmux >/dev/null && [ -z "$TMUX" ] && [ -t 0 ] && [[ $- == *i* ]]; then
+  tmux attach -t main 2>/dev/null || tmux new -s main
+fi
+```
+
+This attaches to a session named `main` if one exists, otherwise creates it. The guards skip auto-start when already inside tmux, in a non-interactive shell, or when there is no tty (e.g. some IDE terminals).
+
+To launch a tmuxinator project instead, replace the `tmux attach` line with `tmuxinator start <name>`.
+
+### Restore sessions after a reboot
+
+Handled by [tmux-continuum](https://github.com/tmux-plugins/tmux-continuum), which is already enabled in `tmux.conf`:
+
+- State is saved every 15 minutes (`@continuum-save-interval`)
+- The last saved state is restored automatically on the first tmux start (`@continuum-restore`)
+- Neovim sessions and pane contents are included via tmux-resurrect
+
+The only requirement is that plugins are installed (`prefix + I`). Use `prefix C-s` / `prefix C-r` to save or restore manually.
+
+### Start a session with predefined windows
+
+**Option 1 — tmuxinator (recommended).** Create a layout file per project:
+
+```sh
+tmuxinator new myproject
+```
+
+This opens `~/.config/tmuxinator/myproject.yml`. Each entry under `windows` is a window; each pane runs the listed command on startup, and `""` gives a plain shell:
+
+```yaml
+name: myproject
+root: ~/code/myproject
+
+windows:
+  - editor:
+      layout: main-vertical
+      panes:
+        - nvim .
+        - ""
+  - git:
+      panes:
+        - lazygit
+  - shell:
+      panes:
+        - ""
+```
+
+Start it with `tmuxinator start myproject`, or pick it from inside tmux with `prefix M`. Tmuxinator attaches to the session if it is already running, so it is safe to use as the terminal auto-start command above:
+
+```sh
+if command -v tmux >/dev/null && [ -z "$TMUX" ] && [ -t 0 ] && [[ $- == *i* ]]; then
+  tmuxinator start myproject
+fi
+```
+
+See the [Tmuxinator](#tmuxinator) section below for installation and more commands.
+
+**Option 2 — plain tmux, no extra tool.** The same layout scripted directly, e.g. in `~/.bashrc` or a standalone script:
+
+```sh
+if ! tmux has-session -t main 2>/dev/null; then
+  tmux new-session -d -s main -n editor -c ~/code/myproject 'nvim .'
+  tmux new-window -t main -n git -c ~/code/myproject 'lazygit'
+  tmux new-window -t main -n shell -c ~/code/myproject
+  tmux select-window -t main:editor
+fi
+tmux attach -t main
+```
+
+Fine for a single fixed layout, but gets verbose compared with the YAML.
+
+> **Note:** tmux-continuum also restores the last saved session on first start. If you use a scripted layout as your default, set `@continuum-restore 'off'` in `tmux.conf`, otherwise you get the restored session **and** the scripted one.
+
 ## Plugins
 
-| Plugin | Purpose |
-|---|---|
-| [tmux-resurrect](https://github.com/tmux-plugins/tmux-resurrect) | Save and restore sessions across reboots |
-| [tmux-continuum](https://github.com/tmux-plugins/tmux-continuum) | Auto-save resurrect state every 15 minutes |
-| [vim-tmux-navigator](https://github.com/christoomey/vim-tmux-navigator) | Seamless `C-h/j/k/l` navigation between Neovim splits and tmux panes |
-| [tmux-yank](https://github.com/tmux-plugins/tmux-yank) | Robust system clipboard integration in copy mode |
-| [tmux-fzf](https://github.com/sainnhe/tmux-fzf) | Fuzzy-find sessions, windows, panes, and commands |
-| [tmux-fingers](https://github.com/Morantron/tmux-fingers) | Hint mode for copying paths, URLs, and git hashes without entering copy mode |
+| Plugin                                                                  | Purpose                                                                      |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| [tmux-resurrect](https://github.com/tmux-plugins/tmux-resurrect)        | Save and restore sessions across reboots                                     |
+| [tmux-continuum](https://github.com/tmux-plugins/tmux-continuum)        | Auto-save resurrect state every 15 minutes                                   |
+| [vim-tmux-navigator](https://github.com/christoomey/vim-tmux-navigator) | Seamless `C-h/j/k/l` navigation between Neovim splits and tmux panes         |
+| [tmux-yank](https://github.com/tmux-plugins/tmux-yank)                  | Robust system clipboard integration in copy mode                             |
+| [tmux-fzf](https://github.com/sainnhe/tmux-fzf)                         | Fuzzy-find sessions, windows, panes, and commands                            |
+| [tmux-fingers](https://github.com/Morantron/tmux-fingers)               | Hint mode for copying paths, URLs, and git hashes without entering copy mode |
 
 > **vim-tmux-navigator** requires a matching Neovim plugin. Add `{ "christoomey/vim-tmux-navigator" }` to your lazy.nvim plugins.
 
@@ -53,17 +135,17 @@ tmux source ~/.config/tmux/tmux.conf
 
 Colors are taken directly from the **Monokai Pro — Ristretto** palette used in the Neovim config.
 
-| Role | Color |
-|---|---|
-| Session pill (purple) | `#a8a9eb` |
-| Active window (yellow) | `#f9cc6c` |
-| Pane border active (blue) | `#85dacc` |
-| Time (blue) | `#85dacc` |
-| Date (green) | `#adda78` |
-| Inactive / dimmed (grey) | `#948a8b` |
+| Role                        | Color     |
+| --------------------------- | --------- |
+| Session pill (purple)       | `#a8a9eb` |
+| Active window (yellow)      | `#f9cc6c` |
+| Pane border active (blue)   | `#85dacc` |
+| Time (blue)                 | `#85dacc` |
+| Date (green)                | `#adda78` |
+| Inactive / dimmed (grey)    | `#948a8b` |
 | Highlight / search (yellow) | `#f9cc6c` |
-| Message (yellow) | `#f9cc6c` |
-| Warning (orange) | `#f38d70` |
+| Message (yellow)            | `#f9cc6c` |
+| Warning (orange)            | `#f38d70` |
 
 All backgrounds use `bg=default` to support terminal transparency.
 
@@ -83,67 +165,67 @@ Window names auto-rename to the basename of the current path.
 
 ### Prefix
 
-| Key | Action |
-|---|---|
-| `C-a` | Prefix (replaces default `C-b`) |
-| `prefix r` | Reload config |
+| Key        | Action                          |
+| ---------- | ------------------------------- |
+| `C-a`      | Prefix (replaces default `C-b`) |
+| `prefix r` | Reload config                   |
 
 ### Panes
 
-| Key | Action |
-|---|---|
-| `prefix \|` | Split horizontal (preserves cwd) |
-| `prefix -` | Split vertical (preserves cwd) |
-| `C-h/j/k/l` | Navigate panes **or** Neovim splits (vim-tmux-navigator, no prefix) |
-| `prefix h/j/k/l` | Navigate panes (prefix fallback) |
-| `prefix H/J/K/L` | Resize pane (repeatable, 5 cells) |
-| `prefix C-l` | Clear screen (restored — vim-tmux-navigator claims bare `C-l`) |
-| `prefix x` | Kill pane |
+| Key              | Action                                                              |
+| ---------------- | ------------------------------------------------------------------- |
+| `prefix \|`      | Split horizontal (preserves cwd)                                    |
+| `prefix -`       | Split vertical (preserves cwd)                                      |
+| `C-h/j/k/l`      | Navigate panes **or** Neovim splits (vim-tmux-navigator, no prefix) |
+| `prefix h/j/k/l` | Navigate panes (prefix fallback)                                    |
+| `prefix H/J/K/L` | Resize pane (repeatable, 5 cells)                                   |
+| `prefix C-l`     | Clear screen (restored — vim-tmux-navigator claims bare `C-l`)      |
+| `prefix x`       | Kill pane                                                           |
 
 ### Windows
 
-| Key | Action |
-|---|---|
-| `prefix c` | New window (preserves cwd) |
-| `prefix [` / `prefix ]` | Previous / next window |
-| `prefix Tab` | Last window |
-| `prefix X` | Kill window |
+| Key                     | Action                     |
+| ----------------------- | -------------------------- |
+| `prefix c`              | New window (preserves cwd) |
+| `prefix [` / `prefix ]` | Previous / next window     |
+| `prefix Tab`            | Last window                |
+| `prefix X`              | Kill window                |
 
 ### Sessions
 
-| Key | Action |
-|---|---|
-| `prefix s` | Session/window tree picker |
-| `prefix n` | New session |
+| Key        | Action                      |
+| ---------- | --------------------------- |
+| `prefix s` | Session/window tree picker  |
+| `prefix n` | New session                 |
 | `prefix Q` | Kill session (with confirm) |
 
 ### Utilities
 
-| Key | Action |
-|---|---|
-| `prefix ?` | Help popup — fuzzy-searchable keybinding reference |
-| `prefix t` | Popup terminal (80% × 75%, at cwd) |
-| `prefix M` | Tmuxinator session picker (fzf) |
+| Key          | Action                                                 |
+| ------------ | ------------------------------------------------------ |
+| `prefix ?`   | Help popup — fuzzy-searchable keybinding reference     |
+| `prefix t`   | Popup terminal (80% × 75%, at cwd)                     |
+| `prefix M`   | Tmuxinator session picker (fzf)                        |
 | `prefix C-f` | tmux-fzf launcher (sessions, windows, panes, commands) |
-| `prefix F` | tmux-fingers hint mode (copy paths, URLs, hashes) |
-| `prefix C-s` | Save session (tmux-resurrect) |
-| `prefix C-r` | Restore session (tmux-resurrect) |
+| `prefix F`   | tmux-fingers hint mode (copy paths, URLs, hashes)      |
+| `prefix C-s` | Save session (tmux-resurrect)                          |
+| `prefix C-r` | Restore session (tmux-resurrect)                       |
 
 ### Copy Mode (vi)
 
 Enter copy mode with `prefix Enter` or `prefix [`.
 
-| Key | Action |
-|---|---|
-| `v` | Begin selection |
-| `C-v` | Toggle rectangle selection |
-| `y` | Yank to system clipboard and exit (tmux-yank) |
-| `Y` | Yank current line to clipboard (tmux-yank) |
-| `Escape` | Cancel |
-| `C-d` / `C-u` | Half-page down / up |
-| `H` / `L` | Start / end of line |
-| `/` / `?` | Search forward / backward |
-| `n` / `N` | Next / previous match |
+| Key           | Action                                        |
+| ------------- | --------------------------------------------- |
+| `v`           | Begin selection                               |
+| `C-v`         | Toggle rectangle selection                    |
+| `y`           | Yank to system clipboard and exit (tmux-yank) |
+| `Y`           | Yank current line to clipboard (tmux-yank)    |
+| `Escape`      | Cancel                                        |
+| `C-d` / `C-u` | Half-page down / up                           |
+| `H` / `L`     | Start / end of line                           |
+| `/` / `?`     | Search forward / backward                     |
+| `n` / `N`     | Next / previous match                         |
 
 ## Tmuxinator
 
@@ -157,14 +239,14 @@ gem install tmuxinator
 
 **Common commands:**
 
-| Command | Action |
-|---|---|
-| `tmuxinator start <name>` | Start a session |
-| `tmuxinator stop <name>` | Stop a session |
-| `tmuxinator new <name>` | Create a new session config |
-| `tmuxinator edit <name>` | Edit an existing config |
-| `tmuxinator list` | List all session configs |
-| `prefix M` | fzf picker to start any tmuxinator session |
+| Command                   | Action                                     |
+| ------------------------- | ------------------------------------------ |
+| `tmuxinator start <name>` | Start a session                            |
+| `tmuxinator stop <name>`  | Stop a session                             |
+| `tmuxinator new <name>`   | Create a new session config                |
+| `tmuxinator edit <name>`  | Edit an existing config                    |
+| `tmuxinator list`         | List all session configs                   |
+| `prefix M`                | fzf picker to start any tmuxinator session |
 
 **Example layout** (`~/.config/tmuxinator/example.yml`):
 
@@ -196,14 +278,14 @@ Copy and rename `example.yml` for each project, update `root` to the project pat
 
 ## Settings Reference
 
-| Setting | Value | Notes |
-|---|---|---|
-| `prefix` | `C-a` | Ergonomic alternative to `C-b` |
-| `base-index` | `1` | Windows and panes start at 1 |
-| `escape-time` | `0` | No delay for Escape (important for Neovim) |
-| `mouse` | `on` | Click to focus, scroll to scroll |
-| `history-limit` | `1000000` | Scrollback lines |
-| `mode-keys` | `vi` | Copy mode uses vim bindings |
-| `focus-events` | `on` | Lets Neovim detect focus for autoread |
-| `detach-on-destroy` | `off` | Switch to another session on kill instead of exiting |
-| `renumber-windows` | `on` | Gaps close automatically after killing a window |
+| Setting             | Value     | Notes                                                |
+| ------------------- | --------- | ---------------------------------------------------- |
+| `prefix`            | `C-a`     | Ergonomic alternative to `C-b`                       |
+| `base-index`        | `1`       | Windows and panes start at 1                         |
+| `escape-time`       | `0`       | No delay for Escape (important for Neovim)           |
+| `mouse`             | `on`      | Click to focus, scroll to scroll                     |
+| `history-limit`     | `1000000` | Scrollback lines                                     |
+| `mode-keys`         | `vi`      | Copy mode uses vim bindings                          |
+| `focus-events`      | `on`      | Lets Neovim detect focus for autoread                |
+| `detach-on-destroy` | `off`     | Switch to another session on kill instead of exiting |
+| `renumber-windows`  | `on`      | Gaps close automatically after killing a window      |
