@@ -126,7 +126,7 @@ fi
 tmux attach -t main
 ```
 
-Fine for a single fixed layout, but gets verbose compared with the YAML.
+Fine for a single fixed layout, but gets verbose compared with the YAML. For a full reusable script with splits, a venv, and a generic launcher that takes a project path, see [docs/sessions-without-tmuxinator.md](docs/sessions-without-tmuxinator.md).
 
 > **Note:** tmux-continuum also restores the last saved session on first start. If you use a scripted layout as your default, set `@continuum-restore 'off'` in `tmux.conf`, otherwise you get the restored session **and** the scripted one.
 
