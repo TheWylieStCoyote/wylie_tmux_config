@@ -40,6 +40,7 @@ row() {
   row "Utilities"  "prefix C-f"       "tmux-fzf launcher"
   row "Utilities"  "prefix F"         "tmux-fingers hint mode"
   row "Utilities"  "prefix ?"         "This help popup"
+  row "Utilities"  "prefix /"         "Built-in tmux key list"
   echo ""
   row "Copy Mode"  "prefix Enter"     "Enter copy mode"
   row "Copy Mode"  "v"                "Begin selection"

@@ -265,8 +265,9 @@ Window names auto-rename to the basename of the current path.
 | Key          | Action                                                 |
 | ------------ | ------------------------------------------------------ |
 | `prefix ?`   | Help popup — fuzzy-searchable keybinding reference     |
+| `prefix /`   | Built-in tmux key list (`list-keys`)                   |
 | `prefix t`   | Popup terminal (80% × 75%, at cwd)                     |
-| `prefix M`   | Tmuxinator session picker (fzf)                        |
+| `prefix M`   | Tmuxinator session picker (fzf); message if not installed |
 | `prefix C-f` | tmux-fzf launcher (sessions, windows, panes, commands) |
 | `prefix F`   | tmux-fingers hint mode (copy paths, URLs, hashes)      |
 | `prefix C-s` | Save session (tmux-resurrect)                          |
@@ -345,7 +346,7 @@ Copy and rename `example.yml` for each project, update `root` to the project pat
 | `base-index`        | `1`       | Windows and panes start at 1                         |
 | `escape-time`       | `0`       | No delay for Escape (important for Neovim)           |
 | `mouse`             | `on`      | Click to focus, scroll to scroll                     |
-| `history-limit`     | `1000000` | Scrollback lines                                     |
+| `history-limit`     | `50000`   | Scrollback lines                                     |
 | `mode-keys`         | `vi`      | Copy mode uses vim bindings                          |
 | `focus-events`      | `on`      | Lets Neovim detect focus for autoread                |
 | `detach-on-destroy` | `off`     | Switch to another session on kill instead of exiting |
