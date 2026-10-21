@@ -4,7 +4,7 @@ A tmux configuration styled to match the [Neovim](../nvim) and [Yazi](../yazi) s
 
 ## Requirements
 
-- tmux ≥ 3.2
+- tmux ≥ 3.2 (3.3+ for image passthrough)
 - A [Nerd Font](https://www.nerdfonts.com/) terminal font
 - [tpm](https://github.com/tmux-plugins/tpm) for plugin management
 
@@ -376,4 +376,4 @@ Copy and rename `example.yml` for each project, update `root` to the project pat
 | `focus-events`      | `on`      | Lets Neovim detect focus for autoread                |
 | `detach-on-destroy` | `off`     | Switch to another session on kill instead of exiting |
 | `renumber-windows`  | `on`      | Gaps close automatically after killing a window      |
-| `allow-passthrough` | `on`      | Lets yazi/kitty/sixel image previews render inside tmux |
+| `allow-passthrough` | `on`      | Lets yazi/kitty/sixel image previews render inside tmux (tmux ≥ 3.3 only; skipped on older versions) |
