@@ -143,6 +143,31 @@ Fine for a single fixed layout, but gets verbose compared with the YAML. For a f
 
 > **Note:** tmux-continuum also restores the last saved session on first start. If you use a scripted layout as your default, set `@continuum-restore 'off'` in `tmux.conf`, otherwise you get the restored session **and** the scripted one.
 
+### Project launcher script
+
+`scripts/session.sh` starts a preconfigured session for a project with no tmuxinator dependency:
+
+```sh
+~/.config/tmux/scripts/session.sh [path] [name]
+```
+
+| Argument | Default |
+|---|---|
+| `path` | current directory |
+| `name` | basename of `path` (`.` and `:` replaced with `_`) |
+
+It creates three windows — `editor` (nvim with a shell split beside it), `git` (lazygit, if installed), and `shell` — all starting in the project directory. If `<path>/.venv/bin/activate` exists it is sourced in every pane. Re-running it attaches to the existing session (or switches to it when already inside tmux) instead of creating a duplicate.
+
+Add an alias for convenience:
+
+```sh
+alias ts='~/.config/tmux/scripts/session.sh'
+ts ~/code/myproject        # session "myproject"
+ts . api                   # current dir, session "api"
+```
+
+To change the layout, edit the script directly; see [docs/sessions-without-tmuxinator.md](docs/sessions-without-tmuxinator.md) for the building blocks.
+
 ### Activate a Python venv on session start
 
 **With tmuxinator**, use `pre_window`. It runs in every pane before that pane's own command, so the whole session starts with the venv active (including Neovim, so language servers pick up the right interpreter):

@@ -2,6 +2,8 @@
 
 Everything tmuxinator does can be written as a plain shell script using tmux commands. Use this on machines where tmuxinator is not installed, or when you want zero dependencies beyond tmux itself.
 
+> A ready-made version of this is in [`scripts/session.sh`](../scripts/session.sh) — see the README's *Project launcher script* section. The rest of this page explains how it is built so you can adapt it.
+
 ## Building blocks
 
 | Command | Purpose |
