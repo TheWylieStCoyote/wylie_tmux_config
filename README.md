@@ -12,11 +12,15 @@ A tmux configuration styled to match the [Neovim](../nvim) and [Yazi](../yazi) s
 
 The config lives at `~/.config/tmux/tmux.conf`, which tmux reads automatically from version 3.1+.
 
-**Install tpm:**
+**Install tpm** — it is a git submodule, so either clone this repo with submodules or fetch it afterwards:
 
 ```sh
-git clone https://github.com/tmux-plugins/tpm ~/.tmux/plugins/tpm
+git clone --recurse-submodules <this-repo> ~/.config/tmux
+# or, in an existing checkout:
+git submodule update --init
 ```
+
+tpm lives at `~/.config/tmux/plugins/tpm`, and installs the other plugins alongside it in `plugins/` (ignored by git).
 
 **Install plugins** — start tmux, then:
 
@@ -186,7 +190,7 @@ tmux attach -t main
 | [tmux-fzf](https://github.com/sainnhe/tmux-fzf)                         | Fuzzy-find sessions, windows, panes, and commands                            |
 | [tmux-fingers](https://github.com/Morantron/tmux-fingers)               | Hint mode for copying paths, URLs, and git hashes without entering copy mode |
 
-> **vim-tmux-navigator** requires a matching Neovim plugin. Add `{ "christoomey/vim-tmux-navigator" }` to your lazy.nvim plugins.
+> **vim-tmux-navigator** requires a matching Neovim plugin. The [Neovim config](../nvim) loads it from `lua/plugins/tmux-navigator.lua`.
 
 ## Theme
 
@@ -270,7 +274,7 @@ Window names auto-rename to the basename of the current path.
 
 ### Copy Mode (vi)
 
-Enter copy mode with `prefix Enter` or `prefix [`.
+Enter copy mode with `prefix Enter` (`prefix [` is rebound to previous window).
 
 | Key           | Action                                        |
 | ------------- | --------------------------------------------- |
@@ -346,3 +350,4 @@ Copy and rename `example.yml` for each project, update `root` to the project pat
 | `focus-events`      | `on`      | Lets Neovim detect focus for autoread                |
 | `detach-on-destroy` | `off`     | Switch to another session on kill instead of exiting |
 | `renumber-windows`  | `on`      | Gaps close automatically after killing a window      |
+| `allow-passthrough` | `on`      | Lets yazi/kitty/sixel image previews render inside tmux |
