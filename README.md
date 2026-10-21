@@ -47,10 +47,19 @@ tmux source ~/.config/tmux/tmux.conf
 | `tmux new -s <name>` | Create a new session called `<name>` (fails if it already exists) |
 | `tmux attach -t <name>` | Attach to an existing session |
 | `tmux new -A -s <name>` | Attach if `<name>` exists, otherwise create it |
+| `tmux new -s <name> -c <dir>` | Create a session whose windows start in `<dir>` |
 | `tmux ls` | List running sessions |
 | `tmux kill-session -t <name>` | Kill a session |
 
 `new` is short for `new-session`. The `-A` form is the one to use in scripts and shell startup files, since it is safe to run repeatedly.
+
+Without `-c`, the session starts in whatever directory you ran the command from. The flags combine, so the one-liner for "open or create my project session in its directory" is:
+
+```sh
+tmux new -A -s myproject -c ~/code/myproject
+```
+
+`-c` sets the session's working directory, so later windows open there too. This config's `prefix c` binding instead opens new windows at the *current pane's* path, so they follow wherever you have `cd`'d to.
 
 ### Start tmux when a terminal opens
 
